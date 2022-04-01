@@ -3,7 +3,7 @@ clear
 close all
 
 % Load in walking data
-load('/Users/yang/MATLAB-Drive/MobileSensorData/walking1010.mat')
+load('50steps.mat')
 time = Acceleration.Timestamp;
 
 % Conversion of date-time format to seconds starting from 0
@@ -20,8 +20,8 @@ end
 
 % Removing constant bias and gravitational acceleration
 accelX = Acceleration.X + 0.1;
-accelY = Acceleration.Y + 0.03;
-accelZ = Acceleration.Z - 9.85;
+accelY = Acceleration.Y + 0.08;
+accelZ = Acceleration.Z - 9.83;
 
 
 plot(t,accelX,'r',t,accelY,'g',t,accelZ,'b')
@@ -42,11 +42,10 @@ title("Magnitude of Acceleration")
 
 % Take FFT of the discrete time signal and shift frequency spectral density
 % according to the sampling rate
-y = fft(accelNorm, length(accelNorm));
-y = fftshift(y);
-f = (-length(y)/2:(length(y)-1)/2)*fs/length(y);
-
-m = abs(y);
+Y = fft(accelNorm, length(accelNorm));
+Y = fftshift(Y);
+f = (-length(Y)/2:(length(Y)-1)/2)*fs/length(Y); % zero-centered frequency range
+m = abs(Y).^2/length(Y); % zero-centered power
 realfreq=f(f>0);
 realmag=m(f>0);
 figure();
@@ -95,6 +94,9 @@ a.FaceAlpha = 0.2;
 
 % 6th order bandpass filter for the determined frequency range
 [b,a] = butter(6, freqRange/(fs/2), 'bandpass');
+figure();
+G=tf(b,a,1/fs); 
+freqz(b,a,[],fs);
 y=filter(b,a,accelNorm);
 figure();
 plot(t, y)
